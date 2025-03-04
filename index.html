@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enviar Dados para Planilha</title>
+</head>
+<body>
+  <h1>Enviar Dados para Planilha</h1>
+  <textarea id="inputData" rows="9" placeholder="Cole 9 linhas no formato 'chave: valor'"></textarea><br><br>
+  <button id="sendButton">Enviar para Planilha</button>
+
+  <script>
+    document.getElementById('sendButton').addEventListener('click', async () => {
+      const textarea = document.getElementById('inputData');
+      const lines = textarea.value.split('\n').map(line => {
+        // Ignora o texto antes do ":" e retorna apenas o valor após o ":"
+        const match = line.trim().match(/:\s*(.*)/);
+        return match ? match[1] : ''; // Retorna o valor após o ":" ou vazio se não houver
+      });
+
+      if (lines.length !== 9) {
+        alert('Por favor, insira exatamente 9 linhas de texto.');
+        return;
+      }
+
+      try {
+        const response = await fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ data: lines })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert('Dados enviados com sucesso!');
+          textarea.value = ''; // Limpa o textarea após o envio
+        } else {
+          alert('Erro ao enviar dados: ' + result.message);
+        }
+      } catch (error) {
+        alert('Erro na comunicação com o servidor: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
